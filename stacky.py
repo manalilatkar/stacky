@@ -45,8 +45,6 @@ def sec_to_str(sec):
     hours = minutes / 60
     minutes = minutes % 60
     return "%02d:%02d:%02d" % (hours, minutes, sec)
-#-----
-
 
 def signal_handler(signal, frame):
     sys.exit(0)
@@ -159,7 +157,7 @@ def get_report(rid):
     url = "/stacky/report/%s" % report_id
 
     r = _check(requests.get(STACKTACH + url))
-    return json.loads(r.json())
+    return r.json()
 
 
 def _str_to_datetime(str):
@@ -324,8 +322,7 @@ if __name__ == '__main__':
     if cmd == 'reports':
         today = datetime.datetime.utcnow().date()
 
-        rstart = datetime.datetime(year=today.year, month=today.month,
-                                                              day=today.day)
+        rstart = datetime.datetime(year=today.year, month=today.month, day=today.day)
         rend = rstart + datetime.timedelta(hours=23, minutes=59, seconds=59)
 
         _date, _time = formatted_datetime(rstart)
