@@ -363,8 +363,13 @@ if __name__ == '__main__':
 
         metadata = r[0]
         report = r[1:]
-        if metadata['report_format'] == 'json':
+
+        if metadata.get('report_format', None) == 'json':
             print(json.dumps(report, indent=4))
+
+        elif metadata.get('raw_text', False):
+            for line in report:
+                print line
         else:
             metadata_report = [['Key', 'Value']]
             for k, v in metadata.iteritems():
