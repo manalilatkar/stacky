@@ -305,7 +305,7 @@ if __name__ == '__main__':
             print "Filtering by Tenant ID:", tenant_id
 
         r = _check(requests.get(STACKTACH + url))
-        dump_results(r)
+        dump_results(r.json())
 
     if cmd == 'usage':
         sub_cmd = safe_arg(2)
