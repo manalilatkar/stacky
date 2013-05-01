@@ -16,16 +16,17 @@ import prettytable as pt
 
 STACKTACH = os.environ['STACKTACH_URL']
 
+
 # Stolen from stacktach/datetime_to_decimal.py
 def dt_to_decimal(utc):
     decimal.getcontext().prec = 30
     return decimal.Decimal(str(calendar.timegm(utc.utctimetuple()))) + \
-           (decimal.Decimal(str(utc.microsecond)) /
-           decimal.Decimal("1000000.0"))
+        (decimal.Decimal(str(utc.microsecond)) /
+         decimal.Decimal("1000000.0"))
 
 
 def dt_from_decimal(dec):
-    if dec == None:
+    if dec is None:
         return "n/a"
     integer = int(dec)
     micro = (dec - decimal.Decimal(integer)) * decimal.Decimal(1000000)
@@ -45,7 +46,6 @@ def sec_to_str(sec):
     hours = minutes / 60
     minutes = minutes % 60
     return "%02d:%02d:%02d" % (hours, minutes, sec)
-#-----
 
 
 def signal_handler(signal, frame):
@@ -87,30 +87,30 @@ def get_deployments():
 
 
 def show_timings_for_uuid(uuid):
-    params = {'uuid' : uuid}
+    params = {'uuid': uuid}
     r = _check(requests.get(STACKTACH + "/stacky/timings/uuid/", params=params))
     return get_json(r)
 
 
 def related_to_uuid(uuid):
-    params = {'uuid' : uuid}
+    params = {'uuid': uuid}
     r = _check(requests.get(STACKTACH + "/stacky/uuid/", params=params))
     return get_json(r)
 
 
-def list_usage_launches(filter = None):
+def list_usage_launches(filter=None):
     r = _check(requests.get(STACKTACH + "/stacky/usage/launches",
                             params=filter))
     return get_json(r)
 
 
-def list_usage_deletes(filter = None):
+def list_usage_deletes(filter=None):
     r = _check(requests.get(STACKTACH + "/stacky/usage/deletes",
                             params=filter))
     return get_json(r)
 
 
-def list_usage_exists(filter = None):
+def list_usage_exists(filter=None):
     r = _check(requests.get(STACKTACH + "/stacky/usage/exists",
                             params=filter))
     return get_json(r)
@@ -146,6 +146,7 @@ def formatted_datetime(dt):
     return ("%04d-%02d-%02d" % (_date.year, _date.month, _date.day),
             "%02d:%02d" % (_time.hour, _time.minute))
 
+
 def get_reports(from_dt, to_dt):
     dstart = dt_to_decimal(from_dt)
     dend = dt_to_decimal(to_dt)
@@ -159,7 +160,7 @@ def get_report(rid):
     url = "/stacky/report/%s" % report_id
 
     r = _check(requests.get(STACKTACH + url))
-    return json.loads(r.json())
+    return r.json()
 
 
 def _str_to_datetime(str):
@@ -231,7 +232,7 @@ if __name__ == '__main__':
     if cmd == 'show':
         event_id = safe_arg(2)
         results = _check(requests.get(STACKTACH + "/stacky/show/%s/" %
-                                                                    event_id))
+                         event_id))
         results = get_json(results)
         if len(results) == 0:
             print "Event %d not found" % event_id
@@ -279,23 +280,22 @@ if __name__ == '__main__':
                 if row < 1:
                     print "+" + "+".join(['-' * width for width in c]) + "+"
                     print "|" + "|".join(['#'.center(c[0]), '?',
-                               dait.center(c[2]),
-                               'Deployment'.center(c[3]),
-                               'Event'.center(c[4]),
-                               'UUID'.center(c[5])]) + "|"
+                                         dait.center(c[2]),
+                                         'Deployment'.center(c[3]),
+                                         'Event'.center(c[4]),
+                                         'UUID'.center(c[5])]) + "|"
                     print "+" + "+".join(['-' * width for width in c]) + "+"
 
                     row = 20
                 print "|" + "|".join([str(_id).center(c[0]),
-                                typ,
-                                tyme.center(c[2]),
-                                deployment_name.center(c[3]),
-                                name.center(c[4]),
-                                uuid.center(c[5])]) + "|"
+                                     typ,
+                                     tyme.center(c[2]),
+                                     deployment_name.center(c[3]),
+                                     name.center(c[4]),
+                                     uuid.center(c[5])]) + "|"
 
                 row -= 1
             time.sleep(poll)
-
 
     if cmd == 'kpi':
         url = "/stacky/kpi/"
@@ -305,8 +305,7 @@ if __name__ == '__main__':
             print "Filtering by Tenant ID:", tenant_id
 
         r = _check(requests.get(STACKTACH + url))
-        dump_results(r)
-
+        dump_results(r.json())
 
     if cmd == 'usage':
         sub_cmd = safe_arg(2)
@@ -320,12 +319,10 @@ if __name__ == '__main__':
         elif sub_cmd == 'exists':
             dump_results(list_usage_exists(filter))
 
-
     if cmd == 'reports':
         today = datetime.datetime.utcnow().date()
 
-        rstart = datetime.datetime(year=today.year, month=today.month,
-                                                              day=today.day)
+        rstart = datetime.datetime(year=today.year, month=today.month, day=today.day)
         rend = rstart + datetime.timedelta(hours=23, minutes=59, seconds=59)
 
         _date, _time = formatted_datetime(rstart)
@@ -336,14 +333,14 @@ if __name__ == '__main__':
         end_time = safe_arg(5, _time)
 
         parsed = []
-        for _date, _time  in [(start_date, start_time), (end_date, end_time)]:
+        for _date, _time in [(start_date, start_time), (end_date, end_time)]:
             try:
                 d = time.strptime(_date, "%Y-%m-%d")
                 t = time.strptime(_time, "%H:%M")
                 parsed.append(datetime.datetime(
-                                       year=d.tm_year, month=d.tm_mon,
-                                       day=d.tm_mday,
-                                       hour=t.tm_hour, minute=t.tm_min))
+                              year=d.tm_year, month=d.tm_mon,
+                              day=d.tm_mday,
+                              hour=t.tm_hour, minute=t.tm_min))
             except Exception, e:
                 print "'%s %s' is in wrong format." % (_date, _time)
 
@@ -360,14 +357,16 @@ if __name__ == '__main__':
             row[3] = dt.strftime("%a %b %d")
         dump_results(r)
 
-
     if cmd == 'report':
         report_id = safe_arg(2)
         r = get_report(report_id)
 
         metadata = r[0]
         report = r[1:]
-        if metadata.get('raw_text', False):
+
+        if metadata.get('report_format') == 'json':
+            print(json.dumps(report, indent=4))
+        elif metadata.get('raw_text', False):
             for line in report:
                 print line
         else:
