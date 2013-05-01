@@ -364,9 +364,8 @@ if __name__ == '__main__':
         metadata = r[0]
         report = r[1:]
 
-        if metadata.get('report_format', None) == 'json':
+        if metadata.get('report_format') == 'json':
             print(json.dumps(report, indent=4))
-
         elif metadata.get('raw_text', False):
             for line in report:
                 print line
