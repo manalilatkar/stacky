@@ -94,7 +94,8 @@ def show_timings_for_uuid(uuid):
 
 def related_to_uuid(uuid):
     params = {'uuid': uuid}
-    r = _check(requests.get(STACKTACH + "/stacky/uuid/", params=params))
+    r = _check(requests.get(STACKTACH + ("/stacky/uuid/%s" % service),
+               params=params))
     return get_json(r)
 
 
@@ -172,11 +173,12 @@ if __name__ == '__main__':
         print """Usage: stacky <command>
     deployments - list stacktach deployments
     events      - list of unique event names
-    watch       - 'watch <deployment id> <event-name> <polling sec>'
+    watch       - 'watch <deployment id> <service-name> <event-name> <polling sec>'
                    deployment id 0 = all
+                   service-name = nova/glance/generic
                    event-name empty = all
                    polling = 2s
-    show    - inspect event ####
+    show    - 'show <service-name> <event-id>'
     uuid    - inspect events with uuid xxxxx
     summary - show summarized timings for all events
     timings - show timings for <event-name> (no .start/.end)
@@ -188,7 +190,8 @@ if __name__ == '__main__':
                        on Feb 28th.
     report  - get json for report <id>
     kpi     - crunch KPI's
-    hosts   - list all host names"""
+    hosts   - list all host names
+    search  - 'search <service-name> <field> <value>"""
         sys.exit(0)
 
     cmd = sys.argv[1]
@@ -229,13 +232,36 @@ if __name__ == '__main__':
         r = _check(requests.get(STACKTACH + "/stacky/request/", params=params))
         dump_results(get_json(r))
 
+    if cmd == 'search':
+        limit = None
+        if len(sys.argv) >= 4:
+            field = safe_arg(3)
+            value = safe_arg(4)
+            service = safe_arg(2)
+        if len(sys.argv) == 6:
+            limit = safe_arg(5)
+            limit = sys.argv[5]
+
+        params = {'field': field, 'value': value}
+        if limit:
+            params['limit'] = limit
+        results = _check(requests.get(STACKTACH + ("/stacky/search/%s/" %service),params=params))
+        if results.content:
+            results = get_json(results)
+            if len(results) == 0:
+                print "Event with %s %s not found" %(field, value)
+                sys.exit(0)
+            dump_results(results)
+        else:
+            print "Server reported: ObjectDoesNotExist"
+
     if cmd == 'show':
-        service = ""
+        service = "nova"
         event_id = safe_arg(2)
         if len(sys.argv) == 4:
             event_id = safe_arg(3)
-            service = "/"+safe_arg(2)
-        results = _check(requests.get(STACKTACH + ("/stacky/show%s/%s" %(service, event_id))))
+            service = safe_arg(2)
+        results = _check(requests.get(STACKTACH + ("/stacky/show/%s/%s" %(service, event_id))))
         if (results.content):
             results = get_json(results)
             if len(results) == 0:
