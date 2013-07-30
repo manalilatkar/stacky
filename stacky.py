@@ -92,9 +92,10 @@ def show_timings_for_uuid(uuid):
     return get_json(r)
 
 
-def related_to_uuid(uuid):
+def related_to_uuid(uuid, service='nova'):
     params = {'uuid': uuid}
-    r = _check(requests.get(STACKTACH + "/stacky/uuid/", params=params))
+    r = _check(requests.get(STACKTACH + "/stacky/uuid/%s/" % service,
+               params=params))
     return get_json(r)
 
 
@@ -231,7 +232,7 @@ if __name__ == '__main__':
 
     if cmd == 'show':
         event_id = safe_arg(2)
-        results = _check(requests.get(STACKTACH + "/stacky/show/%s/" %
+        results = _check(requests.get(STACKTACH + "/stacky/show/nova/%s/" %
                          event_id))
         results = get_json(results)
         if len(results) == 0:
@@ -272,7 +273,7 @@ if __name__ == '__main__':
                 params['event_name'] = event_name
             if last:
                 params['since'] = last
-            results = _check(requests.get(STACKTACH + "/stacky/watch/%d/" %
+            results = _check(requests.get(STACKTACH + "/stacky/watch/%d/nova/" %
                                           deployment_id, params=params))
             c, results, last = get_json(results)
             for r in results:
