@@ -93,8 +93,8 @@ def show_timings_for_uuid(uuid):
 
 
 def related_to_uuid(uuid):
-    params = {'uuid': uuid}
-    r = _check(requests.get(STACKTACH + ("/stacky/uuid/%s" % service),
+    params = {'uuid': uuid, 'service': service}
+    r = _check(requests.get(STACKTACH + ("/stacky/uuid/" ),
                params=params))
     return get_json(r)
 
@@ -245,7 +245,8 @@ if __name__ == '__main__':
         params = {'field': field, 'value': value}
         if limit:
             params['limit'] = limit
-        results = _check(requests.get(STACKTACH + ("/stacky/search/%s/" %service),params=params))
+        params['service'] = service
+        results = _check(requests.get(STACKTACH + ("/stacky/search/"),params=params))
         if results.content:
             results = get_json(results)
             if len(results) == 0:
@@ -261,7 +262,8 @@ if __name__ == '__main__':
         if len(sys.argv) == 4:
             event_id = safe_arg(3)
             service = safe_arg(2)
-        results = _check(requests.get(STACKTACH + ("/stacky/show/%s/%s" %(service, event_id))))
+        params = {'service': service}
+        results = _check(requests.get(STACKTACH + ("/stacky/show/%s/" % event_id), params=params))
         if (results.content):
             results = get_json(results)
             if len(results) == 0:
@@ -315,8 +317,9 @@ if __name__ == '__main__':
                 params['event_name'] = event_name
             if last:
                 params['since'] = last
-            results = _check(requests.get(STACKTACH + "/stacky/watch/%d/%s" %
-                                          (deployment_id, service), params=params))
+            params['service'] = service
+            results = _check(requests.get(STACKTACH + "/stacky/watch/%d/" %
+                                          deployment_id, params=params))
             c, results, last = get_json(results)
             for r in results:
                 _id, typ, dait, tyme, deployment_name, name, uuid = r
